@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uber_users_app/appInfo/app_info.dart';
@@ -20,8 +21,32 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
       TextEditingController();
 
   List<PredictionModel> dropOffPredictionsPlacesList = [];
+  Timer? _searchDebounce;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        String userAddress = Provider.of<AppInfoClass>(context, listen: false)
+                .pickUpLocation
+                ?.humanReadableAddress ??
+            '';
+        pickUpTextEditingController.text = userAddress;
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchDebounce?.cancel();
+    pickUpTextEditingController.dispose();
+    destinationTextEditingController.dispose();
+    super.dispose();
+  }
+
   searchLocation(String locationName) async {
-    if (locationName.length > 1) {
+    if (locationName.trim().length > 1) {
       String apiPlacesUrl =
           "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$locationName&key=$googleMapKey&components=country:pk";
       print('API PLACE URL $apiPlacesUrl');
@@ -50,19 +75,15 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
           print("predicted places = " + predictionsResultsInJson.toString());
         }
       }
+    } else if (mounted && dropOffPredictionsPlacesList.isNotEmpty) {
+      setState(() {
+        dropOffPredictionsPlacesList = [];
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    String userAddress = Provider.of<AppInfoClass>(context, listen: false)
-            .pickUpLocation!
-            .humanReadableAddress ??
-        '';
-
-    print('User Pick Up Location ${userAddress}');
-
-    pickUpTextEditingController.text = userAddress;
     mq = MediaQuery.sizeOf(context);
     return SafeArea(
       child: Scaffold(
@@ -175,7 +196,17 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
                                   child: TextField(
                                     controller: destinationTextEditingController,
                                     onChanged: (value) {
-                                      searchLocation(value);
+                                      // ⚡ Optimization: Debounce API calls by 400ms to prevent sending
+                                      // Google Places requests on every single keystroke.
+                                      if (_searchDebounce?.isActive ?? false) {
+                                        _searchDebounce!.cancel();
+                                      }
+                                      _searchDebounce = Timer(
+                                        const Duration(milliseconds: 400),
+                                        () {
+                                          searchLocation(value);
+                                        },
+                                      );
                                     },
                                     decoration: const InputDecoration(
                                       hintText: "Destination Address",
