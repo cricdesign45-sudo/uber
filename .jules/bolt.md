@@ -1,0 +1,3 @@
+## 2025-08-29 - Un-debounced Google Places API calls in search text fields
+**Learning:** In flutter location-based apps like `uber_users_app`, `onChanged` triggers on `TextField` send immediate HTTP requests per keystroke to Google Places Autocomplete API. This causes network request floods (e.g. 10 requests for a 10-char destination name) and race conditions where older out-of-order API responses override newer predictions.
+**Action:** Use a 300-400ms `Timer` debounce mechanism in stateful search widgets to collapse consecutive keystrokes into a single API request and dispose resources properly.
