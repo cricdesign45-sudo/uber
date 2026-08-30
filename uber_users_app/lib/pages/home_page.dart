@@ -818,6 +818,9 @@ class _HomePageState extends State<HomePage> {
           tripDirectionDetailsInfo!.durationTextString.toString();
     }
 
+    // Performance Optimization: Compute actualFareAmount and estimatedTime without calling setState().
+    // Since calculateFareAndTime() is invoked during the build() execution phase, calling setState()
+    // inside build creates unnecessary frame scheduling overhead and redundant re-renders.
     void calculateFareAndTime() {
       // Parse the time for the car into total minutes
       int totalMinutes = 0;
@@ -833,29 +836,23 @@ class _HomePageState extends State<HomePage> {
 
       // Adjust fare and time based on selected vehicle
       if (selectedVehicle == "Car") {
-        setState(() {
-          actualFareAmount = actualFareAmountCar;
-          estimatedTime =
-              estimatedTimeCar; // Show the car's estimated time directly
-        });
+        actualFareAmount = actualFareAmountCar;
+        estimatedTime =
+            estimatedTimeCar; // Show the car's estimated time directly
       } else if (selectedVehicle == "Auto") {
-        setState(() {
-          actualFareAmount =
-              actualFareAmountCar * 0.8; // Auto fare is 80% of the car fare
-          int updatedMinutes =
-              (totalMinutes * 1.2).toInt(); // Increase time by 20%
-          estimatedTime = commonMethods
-              .formatTime(updatedMinutes); // Convert back to hours and minutes
-        });
+        actualFareAmount =
+            actualFareAmountCar * 0.8; // Auto fare is 80% of the car fare
+        int updatedMinutes =
+            (totalMinutes * 1.2).toInt(); // Increase time by 20%
+        estimatedTime = commonMethods
+            .formatTime(updatedMinutes); // Convert back to hours and minutes
       } else if (selectedVehicle == "Bike") {
-        setState(() {
-          actualFareAmount =
-              actualFareAmountCar * 0.4; // Bike fare is 40% of car fare
-          int updatedMinutes =
-              (totalMinutes * 0.8).toInt(); // Decrease time by 20%
-          estimatedTime = commonMethods
-              .formatTime(updatedMinutes); // Convert back to hours and minutes
-        });
+        actualFareAmount =
+            actualFareAmountCar * 0.4; // Bike fare is 40% of car fare
+        int updatedMinutes =
+            (totalMinutes * 0.8).toInt(); // Decrease time by 20%
+        estimatedTime = commonMethods
+            .formatTime(updatedMinutes); // Convert back to hours and minutes
       }
     }
 
