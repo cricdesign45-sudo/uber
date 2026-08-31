@@ -365,14 +365,9 @@ class _HomePageState extends State<HomePage> {
     makeTripRequest();
   }
 
+  // Performance optimization: Build marker set first and trigger a single setState to avoid double re-renders per location update
   updateAvailableNearbyOnlineDriversOnMap() {
-    if (mounted) {
-      setState(() {
-        markerSet.clear();
-      });
-    }
-
-    Set<Marker> markersTempSet = Set<Marker>();
+    Set<Marker> markersTempSet = <Marker>{};
 
     for (OnlineNearbyDrivers eachOnlineNearbyDriver
         in ManageDriversMethods.nearbyOnlineDriversList) {
@@ -381,7 +376,7 @@ class _HomePageState extends State<HomePage> {
 
       Marker driverMarker = Marker(
         markerId: MarkerId(
-            "driver ID = " + eachOnlineNearbyDriver.uidDriver.toString()),
+            "driver ID = ${eachOnlineNearbyDriver.uidDriver}"),
         position: driverCurrentPosition,
         icon: carIconNearbyDriver!,
       );
@@ -389,11 +384,11 @@ class _HomePageState extends State<HomePage> {
       markersTempSet.add(driverMarker);
     }
 
-    setState(() {
-      if (mounted) {
+    if (mounted) {
+      setState(() {
         markerSet = markersTempSet;
-      }
-    });
+      });
+    }
   }
 
   initializeGeoFireListener() {
