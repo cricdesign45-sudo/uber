@@ -3,32 +3,26 @@ import 'package:uber_users_app/models/online_nearby_drivers.dart';
 class ManageDriversMethods {
   static List<OnlineNearbyDrivers> nearbyOnlineDriversList = [];
 
+  // Performance Optimization: Use removeWhere for single-pass removal.
+  // Avoids running indexWhere scan followed by removeAt shift/bounds checks.
   static void removeDriverFromList(String driverId) {
-    int index = nearbyOnlineDriversList
-        .indexWhere((driver) => driver.uidDriver == driverId);
-
-    if (index != -1) {
-      // Ensure the index is valid
-      nearbyOnlineDriversList.removeAt(index);
-    } else {
-      print("Driver with ID $driverId not found in the list.");
-    }
+    nearbyOnlineDriversList
+        .removeWhere((driver) => driver.uidDriver == driverId);
   }
 
+  // Performance Optimization: Direct indexed loop with early return.
+  // Avoids allocating closure functions on high-frequency GeoFire location update events.
   static void updateOnlineNearbyDriversLocation(
       OnlineNearbyDrivers nearbyOnlineDriverInformation) {
-    int index = nearbyOnlineDriversList.indexWhere((driver) =>
-        driver.uidDriver == nearbyOnlineDriverInformation.uidDriver);
-
-    if (index != -1) {
-      // Ensure the index is valid
-      nearbyOnlineDriversList[index].latDriver =
-          nearbyOnlineDriverInformation.latDriver;
-      nearbyOnlineDriversList[index].lngDriver =
-          nearbyOnlineDriverInformation.lngDriver;
-    } else {
-      print(
-          "Driver with ID ${nearbyOnlineDriverInformation.uidDriver} not found in the list.");
+    for (int i = 0; i < nearbyOnlineDriversList.length; i++) {
+      if (nearbyOnlineDriversList[i].uidDriver ==
+          nearbyOnlineDriverInformation.uidDriver) {
+        nearbyOnlineDriversList[i].latDriver =
+            nearbyOnlineDriverInformation.latDriver;
+        nearbyOnlineDriversList[i].lngDriver =
+            nearbyOnlineDriverInformation.lngDriver;
+        return;
+      }
     }
   }
 }
