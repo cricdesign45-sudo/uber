@@ -69,90 +69,97 @@ class _TripsHistoryPageState extends State<TripsHistoryPage> {
           if (snapshotValue is Map) {
             final Map<String, dynamic> dataTrips =
                 snapshotValue.cast<String, dynamic>();
-            final List<Map<String, dynamic>> tripsList = [];
+
+            // Performance Optimization (Bolt ⚡): Pre-filter the trips list to include
+            // only ended trips that belong to the current user. This avoids unnecessary
+            // iteration and allocation of empty Container widgets in ListView.builder,
+            // reducing widget build overhead and ensuring correct layout sizing.
+            final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+            final List<Map<String, dynamic>> userTripsList = [];
             dataTrips.forEach((key, value) {
               if (value is Map) {
-                tripsList.add({"key": key, ...value});
+                if (value["status"] == "ended" && value["userID"] == currentUserId) {
+                  userTripsList.add({"key": key, ...value});
+                }
               }
             });
 
+            if (userTripsList.isEmpty) {
+              return const Center(
+                child: Text(
+                  "No record found.",
+                  style: TextStyle(color: Colors.black),
+                ),
+              );
+            }
+
             return ListView.builder(
-              padding: EdgeInsets.all(5),
+              padding: const EdgeInsets.all(5),
               shrinkWrap: true,
-              itemCount: tripsList.length,
+              itemCount: userTripsList.length,
               itemBuilder: (context, index) {
-                if (tripsList[index]["status"] != null &&
-                    tripsList[index]["status"] == "ended" &&
-                    tripsList[index]["userID"] ==
-                        FirebaseAuth.instance.currentUser!.uid) {
-                  return Card(
-                    color: Colors.white,
-                    elevation: 10,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Pickup - fare amount
-                          Row(
-                            children: [
-                              Image.asset(
-                                'assets/images/initial.png',
-                                height: 16,
-                                width: 16,
-                              ),
-                              const SizedBox(width: 18),
-                              Expanded(
-                                child: Text(
-                                  tripsList[index]["pickUpAddress"].toString(),
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    //color: Colors.white38,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 5),
-                              Text(
-                                "\Rs " +
-                                    tripsList[index]["fareAmount"].toString(),
+                final trip = userTripsList[index];
+                return Card(
+                  color: Colors.white,
+                  elevation: 10,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Pickup - fare amount
+                        Row(
+                          children: [
+                            Image.asset(
+                              'assets/images/initial.png',
+                              height: 16,
+                              width: 16,
+                            ),
+                            const SizedBox(width: 18),
+                            Expanded(
+                              child: Text(
+                                trip["pickUpAddress"].toString(),
+                                overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
-                                  fontSize: 16,
-                                  //color: Colors.white,
+                                  fontSize: 18,
                                 ),
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          // Dropoff
-                          Row(
-                            children: [
-                              Image.asset(
-                                'assets/images/final.png',
-                                height: 16,
-                                width: 16,
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              "Rs ${trip["fareAmount"]}",
+                              style: const TextStyle(
+                                fontSize: 16,
                               ),
-                              const SizedBox(width: 18),
-                              Expanded(
-                                child: Text(
-                                  tripsList[index]["dropOffAddress"].toString(),
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    //color: Colors.white38,
-                                  ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        // Dropoff
+                        Row(
+                          children: [
+                            Image.asset(
+                              'assets/images/final.png',
+                              height: 16,
+                              width: 16,
+                            ),
+                            const SizedBox(width: 18),
+                            Expanded(
+                              child: Text(
+                                trip["dropOffAddress"].toString(),
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 18,
                                 ),
                               ),
-                            ],
-                          ),
-                        ],
-                      ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                  );
-                } else {
-                  return Container();
-                }
+                  ),
+                );
               },
             );
           } else {
