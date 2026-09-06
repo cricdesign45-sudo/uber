@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uber_users_app/appInfo/app_info.dart';
@@ -19,7 +20,26 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
   TextEditingController destinationTextEditingController =
       TextEditingController();
 
+  Timer? _searchDebounce;
+
   List<PredictionModel> dropOffPredictionsPlacesList = [];
+
+  @override
+  void dispose() {
+    _searchDebounce?.cancel();
+    pickUpTextEditingController.dispose();
+    destinationTextEditingController.dispose();
+    super.dispose();
+  }
+
+  // Debounce API calls to prevent sending network requests on every keystroke
+  void _onSearchChanged(String locationName) {
+    if (_searchDebounce?.isActive ?? false) _searchDebounce!.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 400), () {
+      searchLocation(locationName);
+    });
+  }
+
   searchLocation(String locationName) async {
     if (locationName.length > 1) {
       String apiPlacesUrl =
@@ -175,7 +195,7 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
                                   child: TextField(
                                     controller: destinationTextEditingController,
                                     onChanged: (value) {
-                                      searchLocation(value);
+                                      _onSearchChanged(value);
                                     },
                                     decoration: const InputDecoration(
                                       hintText: "Destination Address",
