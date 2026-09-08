@@ -1,0 +1,3 @@
+## 2025-03-08 - Map vs List lookup for high-frequency Geofire location updates
+**Learning:** Storing dynamic entity streams (like driver locations from Geofire) in a `List` causes $O(N)$ linear scans on every location update or removal event (`indexWhere`). Refactoring internal storage to a `Map<String, Entity>` converts update and removal operations into $O(1)$ constant time. Returning `Iterable<T>` instead of `.values.toList()` in property getters prevents allocating temporary list copies on every UI frame/map marker update.
+**Action:** Always prefer `Map<String, T>` for collection managers handling stream updates indexed by unique key/ID and expose getters as `Iterable<T>`.

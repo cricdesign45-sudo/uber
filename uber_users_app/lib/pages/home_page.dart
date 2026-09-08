@@ -415,8 +415,7 @@ class _HomePageState extends State<HomePage> {
               onlineNearbyDrivers.uidDriver = driverEvent["key"];
               onlineNearbyDrivers.latDriver = driverEvent["latitude"];
               onlineNearbyDrivers.lngDriver = driverEvent["longitude"];
-              ManageDriversMethods.nearbyOnlineDriversList
-                  .add(onlineNearbyDrivers);
+              ManageDriversMethods.addDriver(onlineNearbyDrivers);
 
               if (nearbyOnlineDriversKeysLoaded == true) {
                 updateAvailableNearbyOnlineDriversOnMap();
@@ -1497,7 +1496,8 @@ class _HomePageState extends State<HomePage> {
                                     //get nearest available online drivers
                                     availableNearbyOnlineDriversList =
                                         ManageDriversMethods
-                                            .nearbyOnlineDriversList;
+                                            .nearbyOnlineDriversList
+                                            .toList();
 
                                     //search driver
                                     searchDriver();
