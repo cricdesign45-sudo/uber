@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uber_users_app/appInfo/app_info.dart';
@@ -18,8 +20,39 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
   TextEditingController pickUpTextEditingController = TextEditingController();
   TextEditingController destinationTextEditingController =
       TextEditingController();
+  Timer? _searchDebounceTimer;
 
   List<PredictionModel> dropOffPredictionsPlacesList = [];
+
+  // Debounces search API requests to reduce network calls and prevent UI jank
+  void _onDestinationChanged(String value) {
+    if (_searchDebounceTimer?.isActive ?? false) {
+      _searchDebounceTimer!.cancel();
+    }
+
+    if (value.trim().length <= 1) {
+      if (dropOffPredictionsPlacesList.isNotEmpty && mounted) {
+        setState(() {
+          dropOffPredictionsPlacesList = [];
+        });
+      }
+      return;
+    }
+
+    // Delay execution by 400ms after user stops typing
+    _searchDebounceTimer = Timer(const Duration(milliseconds: 400), () {
+      searchLocation(value);
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchDebounceTimer?.cancel();
+    pickUpTextEditingController.dispose();
+    destinationTextEditingController.dispose();
+    super.dispose();
+  }
+
   searchLocation(String locationName) async {
     if (locationName.length > 1) {
       String apiPlacesUrl =
@@ -174,9 +207,7 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
                                   padding: const EdgeInsets.all(3),
                                   child: TextField(
                                     controller: destinationTextEditingController,
-                                    onChanged: (value) {
-                                      searchLocation(value);
-                                    },
+                                    onChanged: _onDestinationChanged,
                                     decoration: const InputDecoration(
                                       hintText: "Destination Address",
                                       fillColor: Colors.white60,
