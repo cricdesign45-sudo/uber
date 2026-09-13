@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uber_users_app/appInfo/app_info.dart';
@@ -20,6 +22,37 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
       TextEditingController();
 
   List<PredictionModel> dropOffPredictionsPlacesList = [];
+  Timer? _searchDebounceTimer;
+
+  @override
+  void dispose() {
+    // Cancel active debouncing timer to prevent memory leaks and unmounted setState calls
+    _searchDebounceTimer?.cancel();
+    pickUpTextEditingController.dispose();
+    destinationTextEditingController.dispose();
+    super.dispose();
+  }
+
+  /// Debounces location search requests by delaying execution until user stops typing for 400ms.
+  /// Performance optimization: Eliminates redundant Google Places API network calls on every keystroke,
+  /// preventing network latency overhead, race conditions, and excessive API usage.
+  void _onDestinationTextChanged(String value) {
+    _searchDebounceTimer?.cancel();
+
+    if (value.trim().length <= 1) {
+      if (mounted && dropOffPredictionsPlacesList.isNotEmpty) {
+        setState(() {
+          dropOffPredictionsPlacesList = [];
+        });
+      }
+      return;
+    }
+
+    _searchDebounceTimer = Timer(const Duration(milliseconds: 400), () {
+      searchLocation(value);
+    });
+  }
+
   searchLocation(String locationName) async {
     if (locationName.length > 1) {
       String apiPlacesUrl =
@@ -49,6 +82,12 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
           });
           print("predicted places = " + predictionsResultsInJson.toString());
         }
+      }
+    } else {
+      if (mounted && dropOffPredictionsPlacesList.isNotEmpty) {
+        setState(() {
+          dropOffPredictionsPlacesList = [];
+        });
       }
     }
   }
@@ -174,9 +213,7 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
                                   padding: const EdgeInsets.all(3),
                                   child: TextField(
                                     controller: destinationTextEditingController,
-                                    onChanged: (value) {
-                                      searchLocation(value);
-                                    },
+                                    onChanged: _onDestinationTextChanged,
                                     decoration: const InputDecoration(
                                       hintText: "Destination Address",
                                       fillColor: Colors.white60,
