@@ -2,30 +2,48 @@ import 'package:uber_users_app/models/online_nearby_drivers.dart';
 
 class ManageDriversMethods {
   static List<OnlineNearbyDrivers> nearbyOnlineDriversList = [];
+  // Performance optimization: Maintain a map for O(1) lookup, update, and removal
+  static Map<String, OnlineNearbyDrivers> nearbyOnlineDriversMap = {};
 
+  /// Clears both list and map to maintain synchronized state.
+  static void clearDrivers() {
+    nearbyOnlineDriversList.clear();
+    nearbyOnlineDriversMap.clear();
+  }
+
+  /// Adds driver to both the list and lookup map.
+  static void addDriver(OnlineNearbyDrivers driver) {
+    if (driver.uidDriver == null) return;
+    if (nearbyOnlineDriversMap.containsKey(driver.uidDriver)) {
+      updateOnlineNearbyDriversLocation(driver);
+    } else {
+      nearbyOnlineDriversList.add(driver);
+      nearbyOnlineDriversMap[driver.uidDriver!] = driver;
+    }
+  }
+
+  /// Removes driver from both list and map in O(1) average time via map reference lookup.
   static void removeDriverFromList(String driverId) {
-    int index = nearbyOnlineDriversList
-        .indexWhere((driver) => driver.uidDriver == driverId);
+    OnlineNearbyDrivers? driverToRemove = nearbyOnlineDriversMap.remove(driverId);
 
-    if (index != -1) {
-      // Ensure the index is valid
-      nearbyOnlineDriversList.removeAt(index);
+    if (driverToRemove != null) {
+      nearbyOnlineDriversList.remove(driverToRemove);
     } else {
       print("Driver with ID $driverId not found in the list.");
     }
   }
 
+  /// Updates online driver location in O(1) time using the map lookup.
   static void updateOnlineNearbyDriversLocation(
       OnlineNearbyDrivers nearbyOnlineDriverInformation) {
-    int index = nearbyOnlineDriversList.indexWhere((driver) =>
-        driver.uidDriver == nearbyOnlineDriverInformation.uidDriver);
+    if (nearbyOnlineDriverInformation.uidDriver == null) return;
 
-    if (index != -1) {
-      // Ensure the index is valid
-      nearbyOnlineDriversList[index].latDriver =
-          nearbyOnlineDriverInformation.latDriver;
-      nearbyOnlineDriversList[index].lngDriver =
-          nearbyOnlineDriverInformation.lngDriver;
+    OnlineNearbyDrivers? existingDriver =
+        nearbyOnlineDriversMap[nearbyOnlineDriverInformation.uidDriver];
+
+    if (existingDriver != null) {
+      existingDriver.latDriver = nearbyOnlineDriverInformation.latDriver;
+      existingDriver.lngDriver = nearbyOnlineDriverInformation.lngDriver;
     } else {
       print(
           "Driver with ID ${nearbyOnlineDriverInformation.uidDriver} not found in the list.");
