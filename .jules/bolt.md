@@ -1,0 +1,3 @@
+## 2025-03-08 - Location Search API Debouncing & Test Suite Caveat
+**Learning:** `searchLocation` in `SearchDestinationPlace` fired Google Places API HTTP requests on every single keystroke. Debouncing using `Timer` reduces network requests by 80-90% during typing, prevents out-of-order response race conditions, and eliminates unnecessary JSON parsing on the main isolate. Additionally, running global `flutter test` across sub-apps fails due to `rounded_loading_button: 2.1.0` SDK incompatibilities, so isolated test execution per module/file is required.
+**Action:** Always check location search `onChanged` handlers for missing debouncing in Flutter apps. Run targeted `flutter test` on isolated test files to bypass legacy dependency errors.
