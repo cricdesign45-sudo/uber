@@ -1,0 +1,3 @@
+## 2025-05-18 - Flutter `setState` in Widget `build()` Method
+**Learning:** In Flutter `StatefulWidget`s, executing calculations that invoke `setState()` directly inside the `build()` method causes state mutations during widget rendering. This triggers redundant re-renders and unnecessary string parsing / mathematical calculations on every animation frame, map movement, or parent update.
+**Action:** Always compute derived state outside `build()` (e.g., in event handlers, lifecycle methods, or data stream callbacks) and ensure `setState()` is never invoked synchronously during the widget build phase.
