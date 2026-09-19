@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uber_users_app/appInfo/app_info.dart';
@@ -18,6 +20,17 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
   TextEditingController pickUpTextEditingController = TextEditingController();
   TextEditingController destinationTextEditingController =
       TextEditingController();
+
+  // ⚡ Bolt Optimization: Debounce timer for place search to prevent unnecessary Places API calls per keystroke.
+  Timer? _searchDebounce;
+
+  @override
+  void dispose() {
+    _searchDebounce?.cancel();
+    pickUpTextEditingController.dispose();
+    destinationTextEditingController.dispose();
+    super.dispose();
+  }
 
   List<PredictionModel> dropOffPredictionsPlacesList = [];
   searchLocation(String locationName) async {
@@ -175,7 +188,13 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
                                   child: TextField(
                                     controller: destinationTextEditingController,
                                     onChanged: (value) {
-                                      searchLocation(value);
+                                      // ⚡ Bolt Optimization: Debounce search query by 300ms to reduce network calls and rate limits
+                                      if (_searchDebounce?.isActive ?? false) {
+                                        _searchDebounce!.cancel();
+                                      }
+                                      _searchDebounce = Timer(const Duration(milliseconds: 300), () {
+                                        searchLocation(value);
+                                      });
                                     },
                                     decoration: const InputDecoration(
                                       hintText: "Destination Address",
