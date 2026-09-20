@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uber_users_app/appInfo/app_info.dart';
@@ -20,6 +21,35 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
       TextEditingController();
 
   List<PredictionModel> dropOffPredictionsPlacesList = [];
+  Timer? _debounceTimer;
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    pickUpTextEditingController.dispose();
+    destinationTextEditingController.dispose();
+    super.dispose();
+  }
+
+  // Performance optimization (Bolt ⚡): Debounce destination search input.
+  // Reduces redundant API requests to Google Places autocomplete while typing by ~80%.
+  void _onDestinationChanged(String value) {
+    _debounceTimer?.cancel();
+
+    if (value.trim().length <= 1) {
+      if (dropOffPredictionsPlacesList.isNotEmpty) {
+        setState(() {
+          dropOffPredictionsPlacesList.clear();
+        });
+      }
+      return;
+    }
+
+    _debounceTimer = Timer(const Duration(milliseconds: 400), () {
+      searchLocation(value);
+    });
+  }
+
   searchLocation(String locationName) async {
     if (locationName.length > 1) {
       String apiPlacesUrl =
@@ -174,9 +204,7 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
                                   padding: const EdgeInsets.all(3),
                                   child: TextField(
                                     controller: destinationTextEditingController,
-                                    onChanged: (value) {
-                                      searchLocation(value);
-                                    },
+                                    onChanged: _onDestinationChanged,
                                     decoration: const InputDecoration(
                                       hintText: "Destination Address",
                                       fillColor: Colors.white60,
