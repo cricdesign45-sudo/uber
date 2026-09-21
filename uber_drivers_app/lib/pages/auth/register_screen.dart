@@ -16,6 +16,8 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  // Bolt performance optimization: Reuse compiled RegExp instance across phone number validation calls
+  static final RegExp _phoneRegExp = RegExp(r'^[3][0-9]{9}$');
   final TextEditingController phoneController = TextEditingController();
 
   Country selectedCountry = Country(
@@ -344,7 +346,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     // Validate the phone number
     if (phoneNumber.isEmpty ||
         phoneNumber.length != 10 ||
-        !RegExp(r'^[3][0-9]{9}$').hasMatch(phoneNumber)) {
+        !_phoneRegExp.hasMatch(phoneNumber)) {
       // Show error if the phone number is invalid
       commonMethods.displaySnackBar(
         "Please enter a valid mobile number.",

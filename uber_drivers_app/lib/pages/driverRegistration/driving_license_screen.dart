@@ -87,7 +87,7 @@ class _DrivingLicenseScreenState extends State<DrivingLicenseScreen> {
                         if (value == null || value.isEmpty) {
                           return 'License Number is required';
                         }
-                        if (!registrationProvider.licenseRegExp
+                        if (!RegistrationProvider.licenseRegExp
                             .hasMatch(value)) {
                           return 'Please enter a valid license number in ST-24-7174 format';
                         }
