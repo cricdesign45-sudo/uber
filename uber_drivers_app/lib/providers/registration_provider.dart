@@ -35,7 +35,8 @@ class RegistrationProvider extends ChangeNotifier {
   XFile? _drivingLicenseBackImage;
   String? _selectedVehicle;
   bool _isVehicleBasicFormValid = false;
-  final RegExp licenseRegExp = RegExp(r'^[A-Z]{2}-\d{2}-\d{4}$');
+  // Bolt performance optimization: Cache static RegExp instance to prevent re-compilation on every form check
+  static final RegExp licenseRegExp = RegExp(r'^[A-Z]{2}-\d{2}-\d{4}$');
   XFile? _vehicleImage;
   bool _isVehiclePhotoAdded = false;
   XFile? _vehicleRegistrationFrontImage;
