@@ -74,17 +74,21 @@ class CommonMethods {
   }
 
   /// This method shortens the full address by extracting key parts.
+  /// Optimized to avoid string allocations from full split by searching for comma positions.
   static String shortenAddress(String fullAddress) {
-    // Split the address by commas
-    List<String> parts = fullAddress.split(',');
-
-    // Return a shorter version of the address: e.g., "Street Name, City"
-    if (parts.length >= 2) {
-      return "${parts[0].trim()}, ${parts[1].trim()}";
+    final firstComma = fullAddress.indexOf(',');
+    if (firstComma == -1) {
+      return fullAddress;
     }
 
-    // If the address has fewer parts, return it as is
-    return fullAddress;
+    final secondComma = fullAddress.indexOf(',', firstComma + 1);
+    final firstPart = fullAddress.substring(0, firstComma).trim();
+    final secondPart = (secondComma == -1
+            ? fullAddress.substring(firstComma + 1)
+            : fullAddress.substring(firstComma + 1, secondComma))
+        .trim();
+
+    return "$firstPart, $secondPart";
   }
 
   static Future<DirectionDetails?> getDirectionDetailsFromAPI(
