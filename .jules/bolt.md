@@ -1,0 +1,3 @@
+## 2025-05-18 - O(1) Driver Lookups and Swap-and-Pop List Removals in Geofire Stream
+**Learning:** In real-time location stream handlers (like Geofire `onKeyMoved` / `onKeyExited`), using `List.indexWhere` ($O(N)$ linear scan) or `List.removeAt` ($O(N)$ array element shift) causes main-thread micro-stutters when driver counts scale. Combining a lookup `Map<String, T>` with an index tracking `Map<String, int>` allows $O(1)$ in-place property updates and $O(1)$ swap-and-pop removals (`list[index] = list.last; list.removeLast();`).
+**Action:** When managing real-time collections backing Flutter UI lists, pair list backing store with map indices for $O(1)$ swap-and-pop operations.
