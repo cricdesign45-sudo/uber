@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uber_users_app/appInfo/app_info.dart';
@@ -20,6 +22,18 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
       TextEditingController();
 
   List<PredictionModel> dropOffPredictionsPlacesList = [];
+  // Performance optimization: Debounce timer to prevent rapid, unnecessary API requests
+  // on every single keystroke.
+  Timer? _searchDebounce;
+
+  @override
+  void dispose() {
+    _searchDebounce?.cancel();
+    pickUpTextEditingController.dispose();
+    destinationTextEditingController.dispose();
+    super.dispose();
+  }
+
   searchLocation(String locationName) async {
     if (locationName.length > 1) {
       String apiPlacesUrl =
@@ -50,6 +64,12 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
           print("predicted places = " + predictionsResultsInJson.toString());
         }
       }
+    } else {
+      if (mounted && dropOffPredictionsPlacesList.isNotEmpty) {
+        setState(() {
+          dropOffPredictionsPlacesList = [];
+        });
+      }
     }
   }
 
@@ -71,11 +91,8 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
             children: [
               Card(
                 elevation: 5,
-                
                 child: Container(
-                  //height: mq.height * 0.25,
                   decoration: const BoxDecoration(
-                    //color: Colors.black12,
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black12,
@@ -175,7 +192,13 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
                                   child: TextField(
                                     controller: destinationTextEditingController,
                                     onChanged: (value) {
-                                      searchLocation(value);
+                                      // Performance optimization: Debounce input by 400ms to reduce network calls
+                                      // and unnecessary UI re-renders on intermediate keystrokes.
+                                      _searchDebounce?.cancel();
+                                      _searchDebounce = Timer(
+                                        const Duration(milliseconds: 400),
+                                        () => searchLocation(value),
+                                      );
                                     },
                                     decoration: const InputDecoration(
                                       hintText: "Destination Address",
@@ -197,7 +220,7 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
                   ),
                 ),
               ),
-              //diplay the prediction results
+              //display the prediction results
               (dropOffPredictionsPlacesList.isNotEmpty)
                   ? Padding(
                       padding: const EdgeInsets.symmetric(
@@ -205,15 +228,10 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
                         horizontal: 5,
                       ),
                       child: ListView.separated(
-                        padding: EdgeInsets.all(0),
-                        
-                        
+                        padding: const EdgeInsets.all(0),
                         itemBuilder: (context, index) {
                           return Card(
-                            //color: Colors.white10,
                             elevation: 5,
-                            
-                            
                             child: PredictionPlaceUI(
                               predictedPlaceData:
                                   dropOffPredictionsPlacesList[index],
