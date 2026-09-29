@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uber_users_app/appInfo/app_info.dart';
@@ -19,7 +20,20 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
   TextEditingController destinationTextEditingController =
       TextEditingController();
 
+  // Performance optimization: Debounce search input to avoid sending an API
+  // request on every keystroke, reducing network overhead and API usage.
+  Timer? _debounceTimer;
+
   List<PredictionModel> dropOffPredictionsPlacesList = [];
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    pickUpTextEditingController.dispose();
+    destinationTextEditingController.dispose();
+    super.dispose();
+  }
+
   searchLocation(String locationName) async {
     if (locationName.length > 1) {
       String apiPlacesUrl =
@@ -49,6 +63,12 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
           });
           print("predicted places = " + predictionsResultsInJson.toString());
         }
+      }
+    } else {
+      if (mounted && dropOffPredictionsPlacesList.isNotEmpty) {
+        setState(() {
+          dropOffPredictionsPlacesList = [];
+        });
       }
     }
   }
@@ -175,7 +195,13 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
                                   child: TextField(
                                     controller: destinationTextEditingController,
                                     onChanged: (value) {
-                                      searchLocation(value);
+                                      // Cancel previous debounce timer and wait 400ms after user stops typing
+                                      _debounceTimer?.cancel();
+                                      _debounceTimer = Timer(
+                                          const Duration(milliseconds: 400),
+                                          () {
+                                        searchLocation(value);
+                                      });
                                     },
                                     decoration: const InputDecoration(
                                       hintText: "Destination Address",
