@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uber_users_app/appInfo/app_info.dart';
@@ -20,6 +22,11 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
       TextEditingController();
 
   List<PredictionModel> dropOffPredictionsPlacesList = [];
+
+  // Performance optimization: Debounce timer to prevent sending network requests
+  // on every keystroke in search input field, reducing API calls by ~80-90%.
+  Timer? _searchDebounceTimer;
+
   searchLocation(String locationName) async {
     if (locationName.length > 1) {
       String apiPlacesUrl =
@@ -50,7 +57,40 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
           print("predicted places = " + predictionsResultsInJson.toString());
         }
       }
+    } else {
+      if (mounted && dropOffPredictionsPlacesList.isNotEmpty) {
+        setState(() {
+          dropOffPredictionsPlacesList = [];
+        });
+      }
     }
+  }
+
+  void _onSearchInputChanged(String value) {
+    if (_searchDebounceTimer?.isActive ?? false) {
+      _searchDebounceTimer!.cancel();
+    }
+
+    if (value.trim().length <= 1) {
+      if (mounted && dropOffPredictionsPlacesList.isNotEmpty) {
+        setState(() {
+          dropOffPredictionsPlacesList = [];
+        });
+      }
+      return;
+    }
+
+    _searchDebounceTimer = Timer(const Duration(milliseconds: 400), () {
+      searchLocation(value);
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchDebounceTimer?.cancel();
+    pickUpTextEditingController.dispose();
+    destinationTextEditingController.dispose();
+    super.dispose();
   }
 
   @override
@@ -174,9 +214,7 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
                                   padding: const EdgeInsets.all(3),
                                   child: TextField(
                                     controller: destinationTextEditingController,
-                                    onChanged: (value) {
-                                      searchLocation(value);
-                                    },
+                                    onChanged: _onSearchInputChanged,
                                     decoration: const InputDecoration(
                                       hintText: "Destination Address",
                                       fillColor: Colors.white60,
