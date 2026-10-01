@@ -197,6 +197,15 @@ class _HomePageState extends State<HomePage> {
     if (mounted) {
       setState(() {
         tripDirectionDetailsInfo = detailsFromDirectionAPI;
+        if (tripDirectionDetailsInfo != null) {
+          var fareString = cMethods.calculateFareAmountInPKR(
+            tripDirectionDetailsInfo!,
+          );
+          actualFareAmountCar = double.tryParse(fareString) ?? 0.0;
+          estimatedTimeCar =
+              tripDirectionDetailsInfo!.durationTextString.toString();
+          updateFareAndTime();
+        }
       });
     }
 
@@ -338,7 +347,42 @@ class _HomePageState extends State<HomePage> {
       phoneNumberDriver = "";
       carDetailsDriver = "";
       tripStatusDisplay = 'Driver is Arriving';
+
+      tripDirectionDetailsInfo = null;
+      actualFareAmountCar = 0.0;
+      actualFareAmount = 0.0;
+      estimatedTimeCar = "";
+      estimatedTime = "";
     });
+  }
+
+  // Bolt Optimization: Calculate fare and estimated time once when direction info or vehicle selection changes.
+  // This avoids expensive string parsing and setState calls inside the build() method.
+  void updateFareAndTime() {
+    if (tripDirectionDetailsInfo == null) return;
+
+    int totalMinutes = 0;
+    if (estimatedTimeCar.contains("hours")) {
+      List<String> timeParts = estimatedTimeCar.split(" ");
+      int hours = int.tryParse(timeParts[0]) ?? 0;
+      int minutes = int.tryParse(timeParts[2]) ?? 0;
+      totalMinutes = (hours * 60) + minutes;
+    } else {
+      totalMinutes = int.tryParse(estimatedTimeCar.split(" ")[0]) ?? 0;
+    }
+
+    if (selectedVehicle == "Car") {
+      actualFareAmount = actualFareAmountCar;
+      estimatedTime = estimatedTimeCar;
+    } else if (selectedVehicle == "Auto") {
+      actualFareAmount = actualFareAmountCar * 0.8;
+      int updatedMinutes = (totalMinutes * 1.2).toInt();
+      estimatedTime = commonMethods.formatTime(updatedMinutes);
+    } else if (selectedVehicle == "Bike") {
+      actualFareAmount = actualFareAmountCar * 0.4;
+      int updatedMinutes = (totalMinutes * 0.8).toInt();
+      estimatedTime = commonMethods.formatTime(updatedMinutes);
+    }
   }
 
   cancelRideRequest() {
@@ -809,59 +853,6 @@ class _HomePageState extends State<HomePage> {
                 .placeName)
         : 'Fetching Your Current Location.';
 
-    if (tripDirectionDetailsInfo != null) {
-      var fareString = cMethods.calculateFareAmountInPKR(
-        tripDirectionDetailsInfo!,
-      ); // Save the fare amount
-      actualFareAmountCar = double.tryParse(fareString) ?? 0.0;
-      estimatedTimeCar =
-          tripDirectionDetailsInfo!.durationTextString.toString();
-    }
-
-    void calculateFareAndTime() {
-      // Parse the time for the car into total minutes
-      int totalMinutes = 0;
-      if (estimatedTimeCar.contains("hours")) {
-        List<String> timeParts = estimatedTimeCar.split(" ");
-        int hours = int.tryParse(timeParts[0]) ?? 0; // Parse the hours
-        int minutes = int.tryParse(timeParts[2]) ?? 0; // Parse the minutes
-        totalMinutes = (hours * 60) + minutes;
-      } else {
-        // If it's just minutes, like "24 mins"
-        totalMinutes = int.tryParse(estimatedTimeCar.split(" ")[0]) ?? 0;
-      }
-
-      // Adjust fare and time based on selected vehicle
-      if (selectedVehicle == "Car") {
-        setState(() {
-          actualFareAmount = actualFareAmountCar;
-          estimatedTime =
-              estimatedTimeCar; // Show the car's estimated time directly
-        });
-      } else if (selectedVehicle == "Auto") {
-        setState(() {
-          actualFareAmount =
-              actualFareAmountCar * 0.8; // Auto fare is 80% of the car fare
-          int updatedMinutes =
-              (totalMinutes * 1.2).toInt(); // Increase time by 20%
-          estimatedTime = commonMethods
-              .formatTime(updatedMinutes); // Convert back to hours and minutes
-        });
-      } else if (selectedVehicle == "Bike") {
-        setState(() {
-          actualFareAmount =
-              actualFareAmountCar * 0.4; // Bike fare is 40% of car fare
-          int updatedMinutes =
-              (totalMinutes * 0.8).toInt(); // Decrease time by 20%
-          estimatedTime = commonMethods
-              .formatTime(updatedMinutes); // Convert back to hours and minutes
-        });
-      }
-    }
-
-    if (tripDirectionDetailsInfo != null) {
-      calculateFareAndTime();
-    }
 
     final authProvider =
         Provider.of<AuthenticationProvider>(context, listen: false);
@@ -1108,8 +1099,8 @@ class _HomePageState extends State<HomePage> {
                             onTap: () {
                               setState(() {
                                 selectedVehicle = "Car";
+                                updateFareAndTime();
                               });
-                              calculateFareAndTime();
                             },
                             child: Container(
                               decoration: BoxDecoration(
@@ -1140,8 +1131,8 @@ class _HomePageState extends State<HomePage> {
                             onTap: () {
                               setState(() {
                                 selectedVehicle = "Auto";
+                                updateFareAndTime();
                               });
-                              calculateFareAndTime();
                             },
                             child: Container(
                               decoration: BoxDecoration(
@@ -1172,8 +1163,8 @@ class _HomePageState extends State<HomePage> {
                             onTap: () {
                               setState(() {
                                 selectedVehicle = "Bike";
+                                updateFareAndTime();
                               });
-                              calculateFareAndTime();
                             },
                             child: Container(
                               decoration: BoxDecoration(
