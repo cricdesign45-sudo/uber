@@ -1,0 +1,3 @@
+## 2025-05-18 - Geofire Stream Double Rebuilds & O(N) Driver Lookups
+**Learning:** Frequent Geofire `onKeyMoved` stream events in Flutter Google Maps trigger high-frequency UI updates. Calling `setState` twice (clearing marker set, then replacing marker set) caused double widget rebuilds and map flickering on every single driver location ping. Additionally, managing nearby drivers with O(N) linear `indexWhere` searches degraded UI frame rates as the driver count grew.
+**Action:** Always construct marker collections in memory before calling a single atomic `setState` for map updates, and maintain an index Map (`Map<String, int>`) alongside lists for O(1) driver lookups on high-frequency streaming data.
