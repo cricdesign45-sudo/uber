@@ -12,9 +12,7 @@ class _DashboardState extends State<Dashboard> {
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Image.asset("assets/dashboard.webp")
-      ],
+      children: [Image.asset("assets/dashboard.webp")],
     );
   }
 }

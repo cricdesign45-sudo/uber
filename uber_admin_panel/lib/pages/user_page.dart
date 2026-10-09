@@ -28,9 +28,7 @@ class _UserPageState extends State<UserPage> {
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
               ),
-              const SizedBox(
-                height: 10,
-              ),
+              const SizedBox(height: 10),
               Row(
                 children: [
                   //commonMethods.header(2, "USERS ID"),
@@ -40,10 +38,8 @@ class _UserPageState extends State<UserPage> {
                   commonMethods.header(1, "ACTIONS"),
                 ],
               ),
-              const SizedBox(
-                height: 12,
-              ),
-              UsersDataList()
+              const SizedBox(height: 12),
+              UsersDataList(),
             ],
           ),
         ),

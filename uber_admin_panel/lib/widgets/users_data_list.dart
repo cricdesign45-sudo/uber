@@ -12,8 +12,9 @@ class UsersDataList extends StatefulWidget {
 }
 
 class _UsersDataListState extends State<UsersDataList> {
-  final driversRecordsFromDatabase =
-      FirebaseDatabase.instance.ref().child("users");
+  final driversRecordsFromDatabase = FirebaseDatabase.instance.ref().child(
+    "users",
+  );
   CommonMethods commonMethods = CommonMethods();
 
   @override
@@ -31,9 +32,7 @@ class _UsersDataListState extends State<UsersDataList> {
           );
         }
         if (snapshotData.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return const Center(child: CircularProgressIndicator());
         }
         if (snapshotData.connectionState == ConnectionState.none) {
           return const Center(
@@ -105,18 +104,25 @@ class _UsersDataListState extends State<UsersDataList> {
                           width: 10,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  const Color.fromARGB(221, 39, 57, 99),
+                              backgroundColor: const Color.fromARGB(
+                                221,
+                                39,
+                                57,
+                                99,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(0),
                               ),
                             ),
                             onPressed: () {
                               // Call Provider's method to toggle block status
-                              Provider.of<UserProvider>(context,
-                                      listen: false)
-                                  .toggleBlockStatus(listItems[index]["key"],
-                                      listItems[index]["blockStatus"]);
+                              Provider.of<UserProvider>(
+                                context,
+                                listen: false,
+                              ).toggleBlockStatus(
+                                listItems[index]["key"],
+                                listItems[index]["blockStatus"],
+                              );
                             },
                             child: const Text(
                               "Block",
@@ -132,18 +138,25 @@ class _UsersDataListState extends State<UsersDataList> {
                           width: 10,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  const Color.fromARGB(221, 39, 57, 99),
+                              backgroundColor: const Color.fromARGB(
+                                221,
+                                39,
+                                57,
+                                99,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(0),
                               ),
                             ),
                             onPressed: () {
                               // Call Provider's method to toggle block status
-                              Provider.of<UserProvider>(context,
-                                      listen: false)
-                                  .toggleBlockStatus(listItems[index]["key"],
-                                      listItems[index]["blockStatus"]);
+                              Provider.of<UserProvider>(
+                                context,
+                                listen: false,
+                              ).toggleBlockStatus(
+                                listItems[index]["key"],
+                                listItems[index]["blockStatus"],
+                              );
                             },
                             child: const Text(
                               "Unblock",

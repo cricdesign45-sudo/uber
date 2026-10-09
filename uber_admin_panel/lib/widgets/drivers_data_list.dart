@@ -15,8 +15,9 @@ class DriversDataList extends StatefulWidget {
 }
 
 class _DriversDataListState extends State<DriversDataList> {
-  final driversRecordsFromDatabase =
-      FirebaseDatabase.instance.ref().child("drivers");
+  final driversRecordsFromDatabase = FirebaseDatabase.instance.ref().child(
+    "drivers",
+  );
   CommonMethods commonMethods = CommonMethods();
 
   @override
@@ -34,11 +35,9 @@ class _DriversDataListState extends State<DriversDataList> {
           );
         }
         if (snapshotData.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return const Center(child: CircularProgressIndicator());
         }
-        
+
         if (snapshotData.connectionState == ConnectionState.none) {
           return const Center(
             child: Text(
@@ -47,7 +46,7 @@ class _DriversDataListState extends State<DriversDataList> {
             ),
           );
         }
-        
+
         if (!snapshotData.hasData ||
             snapshotData.data?.snapshot.value == null) {
           return const Center(
@@ -100,7 +99,8 @@ class _DriversDataListState extends State<DriversDataList> {
                   listItems[index]["earnings"] != ""
                       ? Text(
                           //style: const TextStyle(color: Colors.white),
-                          "Rs ${listItems[index]["earnings"].toStringAsFixed(2)}")
+                          "Rs ${listItems[index]["earnings"].toStringAsFixed(2)}",
+                        )
                       : const Text(
                           "Rs 0.00",
                           //style: const TextStyle(color: Colors.white),
@@ -114,18 +114,25 @@ class _DriversDataListState extends State<DriversDataList> {
                           width: 10,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  const Color.fromARGB(221, 39, 57, 99),
+                              backgroundColor: const Color.fromARGB(
+                                221,
+                                39,
+                                57,
+                                99,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(0),
                               ),
                             ),
                             onPressed: () {
                               // Call Provider's method to toggle block status
-                              Provider.of<DriverProvider>(context,
-                                      listen: false)
-                                  .toggleBlockStatus(listItems[index]["key"],
-                                      listItems[index]["blockStatus"]);
+                              Provider.of<DriverProvider>(
+                                context,
+                                listen: false,
+                              ).toggleBlockStatus(
+                                listItems[index]["key"],
+                                listItems[index]["blockStatus"],
+                              );
                             },
                             child: const Text(
                               "Block",
@@ -141,18 +148,25 @@ class _DriversDataListState extends State<DriversDataList> {
                           width: 10,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  const Color.fromARGB(221, 39, 57, 99),
+                              backgroundColor: const Color.fromARGB(
+                                221,
+                                39,
+                                57,
+                                99,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(0),
                               ),
                             ),
                             onPressed: () {
                               // Call Provider's method to toggle block status
-                              Provider.of<DriverProvider>(context,
-                                      listen: false)
-                                  .toggleBlockStatus(listItems[index]["key"],
-                                      listItems[index]["blockStatus"]);
+                              Provider.of<DriverProvider>(
+                                context,
+                                listen: false,
+                              ).toggleBlockStatus(
+                                listItems[index]["key"],
+                                listItems[index]["blockStatus"],
+                              );
                             },
                             child: const Text(
                               "Unblock",
@@ -177,10 +191,12 @@ class _DriversDataListState extends State<DriversDataList> {
                         ),
                       ),
                       onPressed: () {
-                        String driverId = listItems[index]["key"] ??
+                        String driverId =
+                            listItems[index]["key"] ??
                             'UnknownID'; // Safe access with default
                         print(
-                            "Navigating to DriverDataScreen with driverId: $driverId"); // Debug print
+                          "Navigating to DriverDataScreen with driverId: $driverId",
+                        ); // Debug print
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -191,10 +207,7 @@ class _DriversDataListState extends State<DriversDataList> {
                       },
                       child: const Text(
                         "View More",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                        ),
+                        style: TextStyle(color: Colors.white, fontSize: 12),
                       ),
                     ),
                   ),
@@ -207,4 +220,3 @@ class _DriversDataListState extends State<DriversDataList> {
     );
   }
 }
-

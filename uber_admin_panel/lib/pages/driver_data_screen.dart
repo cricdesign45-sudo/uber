@@ -13,8 +13,10 @@ class DriverDataScreen extends StatefulWidget {
 class _DriverDataScreenState extends State<DriverDataScreen> {
   @override
   Widget build(BuildContext context) {
-    DatabaseReference driverRef =
-        FirebaseDatabase.instance.ref().child("drivers").child(widget.driverId);
+    DatabaseReference driverRef = FirebaseDatabase.instance
+        .ref()
+        .child("drivers")
+        .child(widget.driverId);
 
     return StreamBuilder(
       stream: driverRef.onValue,
@@ -174,18 +176,21 @@ class _DriverDataScreenState extends State<DriverDataScreen> {
         Text("Color: ${dataMap['vehicleInfo']['color']}"),
         Text("Year: ${dataMap['vehicleInfo']['productionYear']}"),
         Text(
-            "Plate Number: ${dataMap['vehicleInfo']['registrationPlateNumber']}"),
+          "Plate Number: ${dataMap['vehicleInfo']['registrationPlateNumber']}",
+        ),
         const SizedBox(height: 10),
         Wrap(
           spacing: 20,
           runSpacing: 20,
           children: [
             _buildImage(
-                dataMap['vehicleInfo']['registrationCertificateFrontImage'],
-                "Front Certificate"),
+              dataMap['vehicleInfo']['registrationCertificateFrontImage'],
+              "Front Certificate",
+            ),
             _buildImage(
-                dataMap['vehicleInfo']['registrationCertificateBackImage'],
-                "Back Certificate"),
+              dataMap['vehicleInfo']['registrationCertificateBackImage'],
+              "Back Certificate",
+            ),
           ],
         ),
       ],
@@ -195,12 +200,7 @@ class _DriverDataScreenState extends State<DriverDataScreen> {
   Widget _buildImage(String url, String label) {
     return Column(
       children: [
-        Image.network(
-          url,
-          width: 150,
-          height: 150,
-          fit: BoxFit.cover,
-        ),
+        Image.network(url, width: 150, height: 150, fit: BoxFit.cover),
         const SizedBox(height: 5),
         Text(label, style: const TextStyle(fontSize: 12)),
       ],

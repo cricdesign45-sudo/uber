@@ -6,17 +6,12 @@ class CommonMethods {
       flex: headerFlexValue,
       child: Container(
         decoration: BoxDecoration(
-          border: Border.all(
-            color: Colors.white,
-          ),
+          border: Border.all(color: Colors.white),
           color: const Color.fromARGB(221, 39, 57, 99),
         ),
         child: Padding(
           padding: const EdgeInsets.all(10.0),
-          child: Text(
-            headerTitle,
-            style: const TextStyle(color: Colors.white),
-          ),
+          child: Text(headerTitle, style: const TextStyle(color: Colors.white)),
         ),
       ),
     );
@@ -27,15 +22,10 @@ class CommonMethods {
       flex: headerFlexValue,
       child: Container(
         decoration: BoxDecoration(
-          border: Border.all(
-            color: const Color.fromARGB(221, 39, 57, 99),
-          ),
+          border: Border.all(color: const Color.fromARGB(221, 39, 57, 99)),
           //color: const Color.fromARGB(221, 39, 57, 99),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: widget,
-        ),
+        child: Padding(padding: const EdgeInsets.all(10.0), child: widget),
       ),
     );
   }
