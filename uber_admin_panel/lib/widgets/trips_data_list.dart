@@ -12,8 +12,9 @@ class TripsDataList extends StatefulWidget {
 }
 
 class _TripsDataListState extends State<TripsDataList> {
-  final completedTripsRecordsFromDatabase =
-      FirebaseDatabase.instance.ref().child("tripRequest");
+  final completedTripsRecordsFromDatabase = FirebaseDatabase.instance
+      .ref()
+      .child("tripRequest");
   CommonMethods cMethods = CommonMethods();
 
   launchGoogleMapFromSourceToDestination(
@@ -51,95 +52,109 @@ class _TripsDataListState extends State<TripsDataList> {
         }
 
         if (snapshotData.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return const Center(child: CircularProgressIndicator());
         }
 
         Map dataMap = snapshotData.data!.snapshot.value as Map;
+        // ⚡ Performance Optimization:
+        // Pre-filter items to only include ended trips before building the ListView.
+        // This avoids allocating empty Container() widgets and invoking itemBuilder for non-ended trips,
+        // reducing ListView layout/render overhead and improving scroll performance for large datasets.
         List itemsList = [];
         dataMap.forEach((key, value) {
-          itemsList.add({"key": key, ...value});
+          if (value != null && value["status"] == "ended") {
+            itemsList.add({"key": key, ...value});
+          }
         });
 
         return ListView.builder(
           shrinkWrap: true,
           itemCount: itemsList.length,
           itemBuilder: ((context, index) {
-            if (itemsList[index]["status"] != null &&
-                itemsList[index]["status"] == "ended") {
-              return Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    cMethods.data(
-                      2,
-                      Text(itemsList[index]["tripID"].toString(), style: TextStyle(fontSize: 12),),
-                    ),
-                    cMethods.data(
-                      1,
-                      Text(itemsList[index]["userName"].toString(), style: TextStyle(fontSize: 12)),
-                    ),
-                    cMethods.data(
-                      1,
-                      Text(itemsList[index]["driverName"].toString(), style: TextStyle(fontSize: 12)),
-                    ),
-                    cMethods.data(
-                      1,
-                      Text(itemsList[index]["carDetails"].toString(), style: TextStyle(fontSize: 12)),
-                    ),
-                    cMethods.data(
-                      1,
-                      Text(itemsList[index]["publishDateTime"].toString(), style: TextStyle(fontSize: 12)),
-                    ),
-                    cMethods.data(
-                      1,
-                      Text("\Rs " + itemsList[index]["fareAmount"].toString(), style: TextStyle(fontSize: 12)),
-                    ),
-                    cMethods.data(
-                      1,
-                      SizedBox(
-                        height: 20,
-                        width: 10,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                const Color.fromARGB(221, 39, 57, 99),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(0),
-                            ),
-                          ),
-                          onPressed: () {
-                            String pickUpLat =
-                                itemsList[index]["pickUpLatLng"]["latitude"];
-                            String pickUpLng =
-                                itemsList[index]["pickUpLatLng"]["longitude"];
-
-                            String dropOffLat =
-                                itemsList[index]["dropOffLatLng"]["latitude"];
-                            String dropOffLng =
-                                itemsList[index]["dropOffLatLng"]["longitude"];
-
-                            launchGoogleMapFromSourceToDestination(
-                              pickUpLat,
-                              pickUpLng,
-                              dropOffLat,
-                              dropOffLng,
-                            );
-                          },
-                          child: const Text(
-                            "View More",
-                            style: TextStyle(
-                              color: Colors.white,
-                            fontSize: 12,
-                            ),
-                          ),
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                cMethods.data(
+                  2,
+                  Text(
+                    itemsList[index]["tripID"].toString(),
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ),
+                cMethods.data(
+                  1,
+                  Text(
+                    itemsList[index]["userName"].toString(),
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ),
+                cMethods.data(
+                  1,
+                  Text(
+                    itemsList[index]["driverName"].toString(),
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ),
+                cMethods.data(
+                  1,
+                  Text(
+                    itemsList[index]["carDetails"].toString(),
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ),
+                cMethods.data(
+                  1,
+                  Text(
+                    itemsList[index]["publishDateTime"].toString(),
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ),
+                cMethods.data(
+                  1,
+                  Text(
+                    "Rs ${itemsList[index]["fareAmount"]}",
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ),
+                cMethods.data(
+                  1,
+                  SizedBox(
+                    height: 20,
+                    width: 10,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(221, 39, 57, 99),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero,
                         ),
                       ),
+                      onPressed: () {
+                        String pickUpLat =
+                            itemsList[index]["pickUpLatLng"]["latitude"];
+                        String pickUpLng =
+                            itemsList[index]["pickUpLatLng"]["longitude"];
+
+                        String dropOffLat =
+                            itemsList[index]["dropOffLatLng"]["latitude"];
+                        String dropOffLng =
+                            itemsList[index]["dropOffLatLng"]["longitude"];
+
+                        launchGoogleMapFromSourceToDestination(
+                          pickUpLat,
+                          pickUpLng,
+                          dropOffLat,
+                          dropOffLng,
+                        );
+                      },
+                      child: const Text(
+                        "View More",
+                        style: TextStyle(color: Colors.white, fontSize: 12),
+                      ),
                     ),
-                  ]);
-            } else {
-              return Container();
-            }
+                  ),
+                ),
+              ],
+            );
           }),
         );
       },

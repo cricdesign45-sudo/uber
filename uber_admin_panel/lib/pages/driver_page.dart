@@ -31,9 +31,7 @@ class _DriverPageState extends State<DriverPage> {
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
               ),
-              const SizedBox(
-                height: 10,
-              ),
+              const SizedBox(height: 10),
               Row(
                 children: [
                   //commonMethods.header(1, "PICTURE"),
@@ -46,11 +44,7 @@ class _DriverPageState extends State<DriverPage> {
                   commonMethods.header(1, "VIEW MORE"),
                 ],
               ),
-              const SizedBox(
-
-                
-                height: 12,
-              ),
+              const SizedBox(height: 12),
               const DriversDataList(),
             ],
           ),

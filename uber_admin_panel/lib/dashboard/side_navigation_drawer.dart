@@ -29,9 +29,9 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
         });
         break;
       case TripsPage.id:
-      setState(() {
-        chosenScreen = TripsPage();
-      });
+        setState(() {
+          chosenScreen = TripsPage();
+        });
         break;
     }
   }
@@ -39,7 +39,6 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
   @override
   Widget build(BuildContext context) {
     return AdminScaffold(
-      
       //backgroundColor: Colors.white,
       appBar: AppBar(
         centerTitle: false,
@@ -48,8 +47,10 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
         title: const Text(
           "Admin Web Panel",
           style: TextStyle(
-              fontWeight: FontWeight.w600, color: Colors.white, fontSize: 14),
-        
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+            fontSize: 14,
+          ),
         ),
       ),
       sideBar: SideBar(
@@ -78,7 +79,6 @@ class _SideNavigationDrawerState extends State<SideNavigationDrawer> {
             route: TripsPage.id,
             icon: CupertinoIcons.money_dollar,
           ),
-
         ],
         selectedRoute: DriverPage.id,
         onSelected: (itemSelected) {

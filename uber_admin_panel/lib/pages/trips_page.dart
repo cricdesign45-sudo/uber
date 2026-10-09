@@ -28,15 +28,10 @@ class _TripsPageState extends State<TripsPage> {
                 alignment: Alignment.topLeft,
                 child: const Text(
                   "Manage Trips",
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
               ),
-              const SizedBox(
-                height: 18,
-              ),
+              const SizedBox(height: 18),
               Row(
                 children: [
                   cMethods.header(2, "TRIP ID"),
@@ -48,9 +43,7 @@ class _TripsPageState extends State<TripsPage> {
                   cMethods.header(1, "VIEW DETAILS"),
                 ],
               ),
-              const SizedBox(
-                height: 12,
-              ),
+              const SizedBox(height: 12),
               //display data
               const TripsDataList(),
             ],
