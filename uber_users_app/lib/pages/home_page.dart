@@ -365,23 +365,23 @@ class _HomePageState extends State<HomePage> {
     makeTripRequest();
   }
 
+  /// Updates map markers for all available nearby drivers.
+  /// Optimized to build the marker set in a single pass and issue a single atomic setState.
   updateAvailableNearbyOnlineDriversOnMap() {
-    if (mounted) {
-      setState(() {
-        markerSet.clear();
-      });
-    }
+    if (!mounted) return;
 
-    Set<Marker> markersTempSet = Set<Marker>();
+    Set<Marker> markersTempSet = {};
 
     for (OnlineNearbyDrivers eachOnlineNearbyDriver
         in ManageDriversMethods.nearbyOnlineDriversList) {
+      if (eachOnlineNearbyDriver.latDriver == null ||
+          eachOnlineNearbyDriver.lngDriver == null) continue;
+
       LatLng driverCurrentPosition = LatLng(
           eachOnlineNearbyDriver.latDriver!, eachOnlineNearbyDriver.lngDriver!);
 
       Marker driverMarker = Marker(
-        markerId: MarkerId(
-            "driver ID = " + eachOnlineNearbyDriver.uidDriver.toString()),
+        markerId: MarkerId("driver ID = ${eachOnlineNearbyDriver.uidDriver}"),
         position: driverCurrentPosition,
         icon: carIconNearbyDriver!,
       );
@@ -390,9 +390,7 @@ class _HomePageState extends State<HomePage> {
     }
 
     setState(() {
-      if (mounted) {
-        markerSet = markersTempSet;
-      }
+      markerSet = markersTempSet;
     });
   }
 
@@ -415,8 +413,7 @@ class _HomePageState extends State<HomePage> {
               onlineNearbyDrivers.uidDriver = driverEvent["key"];
               onlineNearbyDrivers.latDriver = driverEvent["latitude"];
               onlineNearbyDrivers.lngDriver = driverEvent["longitude"];
-              ManageDriversMethods.nearbyOnlineDriversList
-                  .add(onlineNearbyDrivers);
+              ManageDriversMethods.addDriverToList(onlineNearbyDrivers);
 
               if (nearbyOnlineDriversKeysLoaded == true) {
                 updateAvailableNearbyOnlineDriversOnMap();
