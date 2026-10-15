@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uber_users_app/appInfo/app_info.dart';
@@ -20,8 +21,32 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
       TextEditingController();
 
   List<PredictionModel> dropOffPredictionsPlacesList = [];
-  searchLocation(String locationName) async {
-    if (locationName.length > 1) {
+  Timer? _searchDebounce;
+
+  @override
+  void dispose() {
+    _searchDebounce?.cancel();
+    pickUpTextEditingController.dispose();
+    destinationTextEditingController.dispose();
+    super.dispose();
+  }
+
+  /// Performance optimization: Debounce location searches by 300ms to avoid
+  /// triggering redundant Places API calls on every keystroke, reducing network requests
+  /// and saving API quota during fast typing.
+  searchLocation(String locationName) {
+    _searchDebounce?.cancel();
+
+    if (locationName.length <= 1) {
+      if (dropOffPredictionsPlacesList.isNotEmpty) {
+        setState(() {
+          dropOffPredictionsPlacesList.clear();
+        });
+      }
+      return;
+    }
+
+    _searchDebounce = Timer(const Duration(milliseconds: 300), () async {
       String apiPlacesUrl =
           "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$locationName&key=$googleMapKey&components=country:pk";
       print('API PLACE URL $apiPlacesUrl');
@@ -50,7 +75,7 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
           print("predicted places = " + predictionsResultsInJson.toString());
         }
       }
-    }
+    });
   }
 
   @override
