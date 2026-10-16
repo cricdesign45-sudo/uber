@@ -76,6 +76,13 @@ class _HomePageState extends State<HomePage> {
   double actualFareAmount = 0.0;
   String estimatedTime = "";
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Bolt Optimization: Load map asset marker in lifecycle callback instead of inside build() loop
+    makeDriverNearbyCarIcon();
+  }
+
   makeDriverNearbyCarIcon() {
     if (carIconNearbyDriver == null) {
       ImageConfiguration configuration =
@@ -795,18 +802,13 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    String? userAddress = Provider.of<AppInfoClass>(context, listen: false)
-                .pickUpLocation !=
-            null
-        ? (Provider.of<AppInfoClass>(context, listen: false)
-                    .pickUpLocation!
-                    .placeName!
-                    .length >
-                35
-            ? "${Provider.of<AppInfoClass>(context, listen: false).pickUpLocation!.placeName!.substring(0, 35)}..."
-            : Provider.of<AppInfoClass>(context, listen: false)
-                .pickUpLocation!
-                .placeName)
+    // Bolt Optimization: Cache AppInfoClass provider instance to avoid 4 redundant Provider lookups per build
+    final appInfo = Provider.of<AppInfoClass>(context, listen: false);
+    final pickUpLocation = appInfo.pickUpLocation;
+    String? userAddress = pickUpLocation != null
+        ? (pickUpLocation.placeName != null && pickUpLocation.placeName!.length > 35
+            ? "${pickUpLocation.placeName!.substring(0, 35)}..."
+            : pickUpLocation.placeName)
         : 'Fetching Your Current Location.';
 
     if (tripDirectionDetailsInfo != null) {
@@ -818,6 +820,8 @@ class _HomePageState extends State<HomePage> {
           tripDirectionDetailsInfo!.durationTextString.toString();
     }
 
+    // Bolt Optimization: Compute fare and time synchronously during build without calling setState().
+    // Calling setState() inside build() schedules illegal extra rebuild frames on every frame render.
     void calculateFareAndTime() {
       // Parse the time for the car into total minutes
       int totalMinutes = 0;
@@ -833,29 +837,23 @@ class _HomePageState extends State<HomePage> {
 
       // Adjust fare and time based on selected vehicle
       if (selectedVehicle == "Car") {
-        setState(() {
-          actualFareAmount = actualFareAmountCar;
-          estimatedTime =
-              estimatedTimeCar; // Show the car's estimated time directly
-        });
+        actualFareAmount = actualFareAmountCar;
+        estimatedTime =
+            estimatedTimeCar; // Show the car's estimated time directly
       } else if (selectedVehicle == "Auto") {
-        setState(() {
-          actualFareAmount =
-              actualFareAmountCar * 0.8; // Auto fare is 80% of the car fare
-          int updatedMinutes =
-              (totalMinutes * 1.2).toInt(); // Increase time by 20%
-          estimatedTime = commonMethods
-              .formatTime(updatedMinutes); // Convert back to hours and minutes
-        });
+        actualFareAmount =
+            actualFareAmountCar * 0.8; // Auto fare is 80% of the car fare
+        int updatedMinutes =
+            (totalMinutes * 1.2).toInt(); // Increase time by 20%
+        estimatedTime = commonMethods
+            .formatTime(updatedMinutes); // Convert back to hours and minutes
       } else if (selectedVehicle == "Bike") {
-        setState(() {
-          actualFareAmount =
-              actualFareAmountCar * 0.4; // Bike fare is 40% of car fare
-          int updatedMinutes =
-              (totalMinutes * 0.8).toInt(); // Decrease time by 20%
-          estimatedTime = commonMethods
-              .formatTime(updatedMinutes); // Convert back to hours and minutes
-        });
+        actualFareAmount =
+            actualFareAmountCar * 0.4; // Bike fare is 40% of car fare
+        int updatedMinutes =
+            (totalMinutes * 0.8).toInt(); // Decrease time by 20%
+        estimatedTime = commonMethods
+            .formatTime(updatedMinutes); // Convert back to hours and minutes
       }
     }
 
@@ -865,8 +863,7 @@ class _HomePageState extends State<HomePage> {
 
     final authProvider =
         Provider.of<AuthenticationProvider>(context, listen: false);
-    final appProvider = Provider.of<AppInfoClass>(context, listen: false);
-    makeDriverNearbyCarIcon();
+    final appProvider = appInfo;
 
     return SafeArea(
       child: Scaffold(
