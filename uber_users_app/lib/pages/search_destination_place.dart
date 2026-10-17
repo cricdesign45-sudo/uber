@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uber_users_app/appInfo/app_info.dart';
@@ -19,7 +20,18 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
   TextEditingController destinationTextEditingController =
       TextEditingController();
 
+  // Debounce timer for location search API requests
+  Timer? _searchDebounce;
+
   List<PredictionModel> dropOffPredictionsPlacesList = [];
+
+  @override
+  void dispose() {
+    _searchDebounce?.cancel();
+    pickUpTextEditingController.dispose();
+    destinationTextEditingController.dispose();
+    super.dispose();
+  }
   searchLocation(String locationName) async {
     if (locationName.length > 1) {
       String apiPlacesUrl =
@@ -175,7 +187,25 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
                                   child: TextField(
                                     controller: destinationTextEditingController,
                                     onChanged: (value) {
-                                      searchLocation(value);
+                                      // Performance optimization: Debounce search input (400ms) to prevent
+                                      // sending an HTTP API request on every keystroke. This significantly
+                                      // reduces API calls, network usage, and unnecessary re-renders.
+                                      if (_searchDebounce?.isActive ?? false) {
+                                        _searchDebounce!.cancel();
+                                      }
+                                      if (value.length <= 1) {
+                                        if (dropOffPredictionsPlacesList.isNotEmpty) {
+                                          setState(() {
+                                            dropOffPredictionsPlacesList = [];
+                                          });
+                                        }
+                                      } else {
+                                        _searchDebounce = Timer(
+                                            const Duration(milliseconds: 400),
+                                            () {
+                                          searchLocation(value);
+                                        });
+                                      }
                                     },
                                     decoration: const InputDecoration(
                                       hintText: "Destination Address",
