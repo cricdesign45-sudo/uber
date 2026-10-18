@@ -2,33 +2,66 @@ import 'package:uber_users_app/models/online_nearby_drivers.dart';
 
 class ManageDriversMethods {
   static List<OnlineNearbyDrivers> nearbyOnlineDriversList = [];
+  static final Map<String, OnlineNearbyDrivers> nearbyOnlineDriversMap = {};
 
-  static void removeDriverFromList(String driverId) {
+  /// Adds a driver to the nearby drivers map and list for fast O(1) lookup.
+  static void addDriverToList(OnlineNearbyDrivers driver) {
+    if (driver.uidDriver == null) return;
+    nearbyOnlineDriversMap[driver.uidDriver!] = driver;
     int index = nearbyOnlineDriversList
-        .indexWhere((driver) => driver.uidDriver == driverId);
-
+        .indexWhere((d) => d.uidDriver == driver.uidDriver);
     if (index != -1) {
-      // Ensure the index is valid
-      nearbyOnlineDriversList.removeAt(index);
+      nearbyOnlineDriversList[index] = driver;
     } else {
-      print("Driver with ID $driverId not found in the list.");
+      nearbyOnlineDriversList.add(driver);
     }
   }
 
+  /// Removes a driver by ID from the map and list using O(1) map lookup.
+  static void removeDriverFromList(String driverId) {
+    OnlineNearbyDrivers? removedDriver = nearbyOnlineDriversMap.remove(driverId);
+
+    if (removedDriver != null) {
+      nearbyOnlineDriversList.remove(removedDriver);
+    } else {
+      int index = nearbyOnlineDriversList
+          .indexWhere((driver) => driver.uidDriver == driverId);
+
+      if (index != -1) {
+        nearbyOnlineDriversList.removeAt(index);
+      } else {
+        print("Driver with ID $driverId not found in the list.");
+      }
+    }
+  }
+
+  /// Updates driver location using O(1) map lookup instead of O(N) linear scan.
   static void updateOnlineNearbyDriversLocation(
       OnlineNearbyDrivers nearbyOnlineDriverInformation) {
-    int index = nearbyOnlineDriversList.indexWhere((driver) =>
-        driver.uidDriver == nearbyOnlineDriverInformation.uidDriver);
+    String? driverId = nearbyOnlineDriverInformation.uidDriver;
+    OnlineNearbyDrivers? driver =
+        driverId != null ? nearbyOnlineDriversMap[driverId] : null;
 
-    if (index != -1) {
-      // Ensure the index is valid
-      nearbyOnlineDriversList[index].latDriver =
-          nearbyOnlineDriverInformation.latDriver;
-      nearbyOnlineDriversList[index].lngDriver =
-          nearbyOnlineDriverInformation.lngDriver;
+    if (driver != null) {
+      // O(1) update on the shared object reference
+      driver.latDriver = nearbyOnlineDriverInformation.latDriver;
+      driver.lngDriver = nearbyOnlineDriverInformation.lngDriver;
     } else {
-      print(
-          "Driver with ID ${nearbyOnlineDriverInformation.uidDriver} not found in the list.");
+      int index = nearbyOnlineDriversList.indexWhere((driver) =>
+          driver.uidDriver == nearbyOnlineDriverInformation.uidDriver);
+
+      if (index != -1) {
+        nearbyOnlineDriversList[index].latDriver =
+            nearbyOnlineDriverInformation.latDriver;
+        nearbyOnlineDriversList[index].lngDriver =
+            nearbyOnlineDriverInformation.lngDriver;
+        if (driverId != null) {
+          nearbyOnlineDriversMap[driverId] = nearbyOnlineDriversList[index];
+        }
+      } else {
+        print(
+            "Driver with ID ${nearbyOnlineDriverInformation.uidDriver} not found in the list.");
+      }
     }
   }
 }
