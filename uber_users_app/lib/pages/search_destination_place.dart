@@ -62,7 +62,11 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
 
     print('User Pick Up Location ${userAddress}');
 
-    pickUpTextEditingController.text = userAddress;
+    // Performance Optimization (Bolt ⚡): Only update text controller if the value actually changed.
+    // Setting text unconditionally on every build triggers selection/cursor listeners and unnecessary rebuild side effects.
+    if (pickUpTextEditingController.text != userAddress) {
+      pickUpTextEditingController.text = userAddress;
+    }
     mq = MediaQuery.sizeOf(context);
     return SafeArea(
       child: Scaffold(
