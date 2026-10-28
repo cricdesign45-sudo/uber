@@ -1,0 +1,3 @@
+## 2024-10-28 - O(N) to O(1) Real-time Geofire Driver Tracking Optimization
+**Learning:** Geofire `onKeyEntered`, `onKeyMoved`, and `onKeyExited` events occur frequently as online drivers stream real-time location updates. Performing O(N) linear list searches (`indexWhere`) on every location tick causes unnecessary CPU churn and main thread frame drops as the number of active drivers grows.
+**Action:** Use an internal `Map<String, OnlineNearbyDrivers>` index to achieve O(1) time complexity for driver insertions, removals, and location updates while exposing a getter list for UI rendering compatibility.
