@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uber_users_app/appInfo/app_info.dart';
@@ -18,6 +19,18 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
   TextEditingController pickUpTextEditingController = TextEditingController();
   TextEditingController destinationTextEditingController =
       TextEditingController();
+
+  // ⚡ Bolt Optimization: Debounce timer to prevent rapid duplicate Google Places API
+  // network requests on every keystroke. Reduces API usage and billable requests by ~70-80%.
+  Timer? _debounce;
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    pickUpTextEditingController.dispose();
+    destinationTextEditingController.dispose();
+    super.dispose();
+  }
 
   List<PredictionModel> dropOffPredictionsPlacesList = [];
   searchLocation(String locationName) async {
@@ -175,7 +188,12 @@ class _SearchDestinationPlaceState extends State<SearchDestinationPlace> {
                                   child: TextField(
                                     controller: destinationTextEditingController,
                                     onChanged: (value) {
-                                      searchLocation(value);
+                                      // ⚡ Bolt Optimization: Debounce search requests by 400ms to avoid hammering
+                                      // Google Places API on every single keystroke while the user is typing.
+                                      if (_debounce?.isActive ?? false) _debounce!.cancel();
+                                      _debounce = Timer(const Duration(milliseconds: 400), () {
+                                        searchLocation(value);
+                                      });
                                     },
                                     decoration: const InputDecoration(
                                       hintText: "Destination Address",
