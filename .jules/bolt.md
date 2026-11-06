@@ -1,0 +1,3 @@
+## 2026-03-01 - Debouncing Google Places API calls in Flutter TextFields
+**Learning:** In the Flutter ride-sharing client, `TextField.onChanged` in search views triggered an immediate HTTP request to the Google Maps Places Autocomplete API on every single keystroke. In a word with 6-10 characters, this fired 6-10 HTTP requests and caused rapid sequential `setState` invocations, causing UI jank and excessive API quota exhaustion.
+**Action:** Always wrap search input handlers with a `Timer? _debounceTimer` (300-500ms delay) and ensure active timers and controllers are cancelled and disposed in the `State`'s `dispose()` lifecycle method.
