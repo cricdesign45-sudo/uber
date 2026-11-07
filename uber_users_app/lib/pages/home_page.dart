@@ -415,8 +415,8 @@ class _HomePageState extends State<HomePage> {
               onlineNearbyDrivers.uidDriver = driverEvent["key"];
               onlineNearbyDrivers.latDriver = driverEvent["latitude"];
               onlineNearbyDrivers.lngDriver = driverEvent["longitude"];
-              ManageDriversMethods.nearbyOnlineDriversList
-                  .add(onlineNearbyDrivers);
+              // Bolt ⚡: Use optimized addDriverToList for synchronized O(1) map + list tracking and deduplication
+              ManageDriversMethods.addDriverToList(onlineNearbyDrivers);
 
               if (nearbyOnlineDriversKeysLoaded == true) {
                 updateAvailableNearbyOnlineDriversOnMap();
