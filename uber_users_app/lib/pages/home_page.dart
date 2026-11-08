@@ -415,8 +415,7 @@ class _HomePageState extends State<HomePage> {
               onlineNearbyDrivers.uidDriver = driverEvent["key"];
               onlineNearbyDrivers.latDriver = driverEvent["latitude"];
               onlineNearbyDrivers.lngDriver = driverEvent["longitude"];
-              ManageDriversMethods.nearbyOnlineDriversList
-                  .add(onlineNearbyDrivers);
+              ManageDriversMethods.addDriverToList(onlineNearbyDrivers);
 
               if (nearbyOnlineDriversKeysLoaded == true) {
                 updateAvailableNearbyOnlineDriversOnMap();
