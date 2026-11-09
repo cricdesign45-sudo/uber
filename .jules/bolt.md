@@ -1,0 +1,3 @@
+## 2026-03-31 - Fast Driver Location Indexing for GeoFire Streams
+**Learning:** In ride-sharing Flutter apps streaming high-frequency geolocation updates (via GeoFire `onKeyMoved` / `onKeyExited`), linear `indexWhere` scans across driver lists run on the main UI thread on every tick. At scale or with frequent coordinate updates, O(N) scans degrade frame rates during map interactions.
+**Action:** Back in-memory real-time driver collections with a hash map `Map<String, T>` index for O(1) coordinate updates and removals while projecting or synchronizing an exposed `List<T>` for UI widget bindings.
