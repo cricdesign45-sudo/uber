@@ -171,4 +171,43 @@ class CommonMethods {
       return "$minutes mins"; // If there are no hours, just show minutes
     }
   }
+
+  /// Calculates fare and adjusted estimated time for a specific vehicle type.
+  /// Performance optimization: pure calculation decoupled from Flutter widget tree and setState,
+  /// avoiding redundant rebuilds during the build() phase.
+  static ({double fare, String estimatedTime}) calculateFareAndTimeForVehicle({
+    required String vehicleType,
+    required double actualFareAmountCar,
+    required String estimatedTimeCar,
+  }) {
+    int totalMinutes = 0;
+    if (estimatedTimeCar.contains("hours")) {
+      List<String> timeParts = estimatedTimeCar.split(" ");
+      int hours = int.tryParse(timeParts[0]) ?? 0;
+      int minutes = int.tryParse(timeParts[2]) ?? 0;
+      totalMinutes = (hours * 60) + minutes;
+    } else {
+      totalMinutes = int.tryParse(estimatedTimeCar.split(" ")[0]) ?? 0;
+    }
+
+    if (vehicleType == "Auto") {
+      int updatedMinutes = (totalMinutes * 1.2).toInt();
+      return (
+        fare: actualFareAmountCar * 0.8,
+        estimatedTime: CommonMethods().formatTime(updatedMinutes),
+      );
+    } else if (vehicleType == "Bike") {
+      int updatedMinutes = (totalMinutes * 0.8).toInt();
+      return (
+        fare: actualFareAmountCar * 0.4,
+        estimatedTime: CommonMethods().formatTime(updatedMinutes),
+      );
+    } else {
+      // Default to Car
+      return (
+        fare: actualFareAmountCar,
+        estimatedTime: estimatedTimeCar,
+      );
+    }
+  }
 }
